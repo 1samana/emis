@@ -24,10 +24,12 @@ const ListAllAssignmentsPage = () => {
         Authorization: `Bearer ${authToken.access}`,
       },
     };
-
+  
     try {
       const response = await axios.get(`/proxy/roles/assignment/listAssignment/`, config);
-      setAssignments(response.data);
+      // Sort assignments by created_at date from latest to oldest
+      const sortedAssignments = response.data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      setAssignments(sortedAssignments);
       setError("");
     } catch (error) {
       console.error("Error fetching assignments:", error);
@@ -44,6 +46,8 @@ const ListAllAssignmentsPage = () => {
       setLoading(false);
     }
   };
+  
+
 
   useEffect(() => {
     fetchAssignments();
