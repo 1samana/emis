@@ -34,11 +34,7 @@ const ListAllAssignmentPage = () => {
     };
   
     try {
-<<<<<<< HEAD
-      const response = await axios.get(`/proxy/roles/assignment/listAssignment/`, config);
-      // Sort assignments by created_at date from latest to oldest
-      const sortedAssignments = response.data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-=======
+
       const response = await axios.get(
         `/proxy/roles/assignment/listAssignment/`,
         config
@@ -49,7 +45,6 @@ const ListAllAssignmentPage = () => {
         (a, b) => new Date(b.created_at) - new Date(a.created_at)
       );
 
->>>>>>> 64f567d9c582779147991becdb7f859ceda0ac23
       setAssignments(sortedAssignments);
       setError("");
     } catch (error) {
