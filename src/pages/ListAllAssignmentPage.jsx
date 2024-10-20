@@ -1,28 +1,17 @@
 import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
-import {
-  Box,
-  Table,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tr,
-  Text,
-  useToast,
-  Button,
-} from "@chakra-ui/react";
+import { Box, Table, Tbody, Td, Th, Thead, Tr, Text, useToast, Button, ButtonGroup } from "@chakra-ui/react"; 
 import LoadingGif from "../assets/news-loading.gif";
 import { AuthContext } from "../context/AuthContext";
 
 const BASE_URL = "http://10.5.15.11:8000";
 
-const ListAllAssignmentPage = () => {
+const ListAllAssignmentsPage = () => {
   const [assignments, setAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const toast = useToast();
-
+  
   const { authToken } = useContext(AuthContext);
 
   const fetchAssignments = async () => {
@@ -32,19 +21,10 @@ const ListAllAssignmentPage = () => {
         Authorization: `Bearer ${authToken.access}`,
       },
     };
-  
+
     try {
-
-      const response = await axios.get(
-        `/proxy/roles/assignment/listAssignment/`,
-        config
-      );
-
-      // Sort assignments from latest to oldest by `created_at` date
-      const sortedAssignments = response.data.sort(
-        (a, b) => new Date(b.created_at) - new Date(a.created_at)
-      );
-
+      const response = await axios.get(`/proxy/roles/assignment/listAssignment/`, config);
+      const sortedAssignments = response.data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
       setAssignments(sortedAssignments);
       setError("");
     } catch (error) {
@@ -52,9 +32,7 @@ const ListAllAssignmentPage = () => {
       setError("Failed to fetch assignments.");
       toast({
         title: "Error fetching assignments",
-        description:
-          error.response?.data?.message ||
-          "An error occurred while fetching assignments.",
+        description: error.response?.data?.message || "An error occurred while fetching assignments.",
         status: "error",
         position: "top-right",
         duration: 3000,
@@ -64,43 +42,74 @@ const ListAllAssignmentPage = () => {
       setLoading(false);
     }
   };
-  
 
-
-  const handleDelete = async (assignmentID) => {
-    try {
-      const config = {
-        headers: {
-          Authorization: `Bearer ${authToken.access}`,
-        },
-      };
-      await axios.delete(
-        `/proxy/roles/assignment/deleteAssignment/${assignmentID}`,
-        config
-      );
-
-      // Update the assignment list after deletion
-      setAssignments(
-        assignments.filter(
-          (assignment) => assignment.assignmentID !== assignmentID
-        )
-      );
-
-      toast({
-        title: "Assignment deleted",
-        status: "success",
-        duration: 2000,
-        isClosable: true,
-      });
-    } catch (error) {
-      console.error("Error deleting assignment:", error);
-      toast({
-        title: "Error deleting assignment",
-        status: "error",
-        duration: 2000,
-        isClosable: true,
-      });
-    }
+  const handleDelete = (assignmentID) => {
+    toast({
+      title: "Confirm Delete",
+      description: "Are you sure you want to delete this assignment?",
+      status: "warning",
+      duration: null,
+      position: "top-right",
+      isClosable: false,
+      render: () => (
+        <Box
+          color="black"
+          p={3}
+          className="bg-white flex flex-col items-center justify-center border border-gray-300/80"
+          borderRadius="md"
+          mt={16}
+        >
+          <Text fontWeight="bold">Confirm Delete!</Text>
+          <Text>Are you sure you want to delete this assignment?</Text>
+          <Box>
+            <Button
+              mt={3}
+              colorScheme="red"
+              onClick={async () => {
+                try {
+                  const config = {
+                    headers: {
+                      Authorization: `Bearer ${authToken.access}`,
+                    },
+                  };
+                  await axios.delete(`/proxy/roles/assignment/deleteAssignment/${assignmentID}/`, config);
+                  setAssignments(assignments.filter((assignment) => assignment.assignmentID !== assignmentID));
+                  toast({
+                    title: "Assignment deleted",
+                    status: "success",
+                    duration: 3000,
+                    position: "top-right",
+                    isClosable: true,
+                  });
+                } catch (error) {
+                  console.error("Error deleting assignment:", error);
+                  toast({
+                    title: "Error deleting assignment",
+                    description: error.response?.data?.message || "An error occurred while deleting the assignment.",
+                    status: "error",
+                    duration: 3000,
+                    position: "top-right",
+                    isClosable: true,
+                  });
+                }
+                toast.closeAll();
+              }}
+            >
+              Delete
+            </Button>
+            <Button
+              mt={3}
+              ml={2}
+              onClick={() => {
+                toast.closeAll(); // Just close the toast if user cancels
+              }}
+            >
+              Cancel
+            </Button>
+          </Box>
+        </Box>
+      ),
+    });
   };
 
   useEffect(() => {
@@ -129,55 +138,23 @@ const ListAllAssignmentPage = () => {
           <Table className="min-w-full table-auto border-collapse border border-gray-200">
             <Thead>
               <Tr className="bg-blue-500">
-                <Th className="px-4 py-2 border border-gray-300" color="white">
-                  Serial No.
-                </Th>
-                <Th className="px-4 py-2 border border-gray-300" color="white">
-                  Assignment ID
-                </Th>
-                <Th className="px-4 py-2 border border-gray-300" color="white">
-                  Title
-                </Th>
-                <Th className="px-4 py-2 border border-gray-300" color="white">
-                  File
-                </Th>
-                <Th className="px-4 py-2 border border-gray-300" color="white">
-                  Description
-                </Th>
-                <Th className="px-4 py-2 border border-gray-300" color="white">
-                  Created At
-                </Th>
-                <Th className="px-4 py-2 border border-gray-300" color="white">
-                  Due Date
-                </Th>
-                <Th className="px-4 py-2 border border-gray-300" color="white">
-                  Posted By
-                </Th>
-                <Th className="px-4 py-2 border border-gray-300" color="white">
-                  Subject ID
-                </Th>
-                <Th className="px-4 py-2 border border-gray-300" color="white">
-                  Actions
-                </Th>
+                <Th className="px-4 py-2 border border-gray-300" color="white">S.No</Th> {/* Serial Number Header */}
+                <Th className="px-4 py-2 border border-gray-300" color="white">Title</Th>
+                <Th className="px-4 py-2 border border-gray-300" color="white">File</Th>
+                <Th className="px-4 py-2 border border-gray-300" color="white">Description</Th>
+                <Th className="px-4 py-2 border border-gray-300" color="white">Created At</Th>
+                <Th className="px-4 py-2 border border-gray-300" color="white">Due Date</Th>
+                <Th className="px-4 py-2 border border-gray-300" color="white">Posted By</Th>
+                <Th className="px-4 py-2 border border-gray-300" color="white">Subject ID</Th>
+                <Th className="px-4 py-2 border border-gray-300" color="white">Actions</Th>
               </Tr>
             </Thead>
             <Tbody>
               {assignments.length > 0 ? (
-                assignments.map((assignment, index) => (
-                  <Tr
-                    key={assignment.assignmentID}
-                    className="bg-white even:bg-gray-100"
-                  >
-                    <Td className="px-4 py-2 border border-gray-300">
-                      {index + 1}
-                    </Td>{" "}
-                    {/* Serial No */}
-                    <Td className="px-4 py-2 border border-gray-300">
-                      {assignment.assignmentID}
-                    </Td>
-                    <Td className="px-4 py-2 border border-gray-300">
-                      {assignment.assignmentTitle}
-                    </Td>
+                assignments.map((assignment, index) => ( // Include index for serial number
+                  <Tr key={assignment.assignmentID} className="bg-white even:bg-gray-100">
+                    <Td className="px-4 py-2 border border-gray-300">{index + 1}</Td> {/* Serial Number */}
+                    <Td className="px-4 py-2 border border-gray-300">{assignment.assignmentTitle}</Td>
                     <td className="px-4 py-2 border border-gray-300">
                       {assignment.assignmentInFile ? (
                         <a
@@ -192,28 +169,28 @@ const ListAllAssignmentPage = () => {
                         "N/A"
                       )}
                     </td>
+                    <Td className="px-4 py-2 border border-gray-300">{assignment.assignmentInText || "N/A"}</Td>
+                    <Td className="px-4 py-2 border border-gray-300">{new Date(assignment.created_at).toLocaleString()}</Td>
+                    <Td className="px-4 py-2 border border-gray-300">{assignment.due_date}</Td>
+                    <Td className="px-4 py-2 border border-gray-300">{assignment.userID}</Td>
+                    <Td className="px-4 py-2 border border-gray-300">{assignment.subjectID}</Td>
                     <Td className="px-4 py-2 border border-gray-300">
-                      {assignment.assignmentInText || "N/A"}
-                    </Td>
-                    <Td className="px-4 py-2 border border-gray-300">
-                      {new Date(assignment.created_at).toLocaleString()}
-                    </Td>
-                    <Td className="px-4 py-2 border border-gray-300">
-                      {assignment.due_date}
-                    </Td>
-                    <Td className="px-4 py-2 border border-gray-300">
-                      {assignment.userID}
-                    </Td>
-                    <Td className="px-4 py-2 border border-gray-300">
-                      {assignment.subjectID}
-                    </Td>
-                    <Td className="px-4 py-2 border border-gray-300">
-                      <Button
-                        colorScheme="red"
-                        onClick={() => handleDelete(assignment.assignmentID)}
-                      >
-                        Delete
-                      </Button>
+                      <ButtonGroup spacing={2}>
+                        <Button
+                          colorScheme="blue"
+                          onClick={() => console.log('Edit assignment:', assignment.assignmentID)}
+                          size="sm"
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          colorScheme="red"
+                          onClick={() => handleDelete(assignment.assignmentID)}
+                          size="sm"
+                        >
+                          Delete
+                        </Button>
+                      </ButtonGroup>
                     </Td>
                   </Tr>
                 ))
@@ -232,4 +209,4 @@ const ListAllAssignmentPage = () => {
   );
 };
 
-export default ListAllAssignmentPage;
+export default ListAllAssignmentsPage;
