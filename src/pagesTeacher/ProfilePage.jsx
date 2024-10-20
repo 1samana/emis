@@ -4,7 +4,8 @@ import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 const BASE_URL = "http://10.5.15.11:8000";
 
-const ProfilePage = ({ closeModal }) => { // Accept closeModal as a prop
+const ProfilePage = ({ closeModal }) => {
+  // Accept closeModal as a prop
   const navigate = useNavigate(); // Initialize the useNavigate hook
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -78,7 +79,9 @@ const ProfilePage = ({ closeModal }) => { // Accept closeModal as a prop
       <div className="bg-white shadow-lg rounded-lg w-full max-w-3xl p-6 flex">
         {/* Left Side */}
         <div className="w-1/2 px-6 pt-0 pb-6">
-          <h1 className="text-4xl font-bold text-blue-600">{profile.Father_name}</h1>
+          <h1 className="text-4xl font-bold text-blue-600">
+            {profile.Father_name}
+          </h1>
           <span className="text-black">
             <p className="text-lg text-black">{role}</p>
           </span>
@@ -87,19 +90,24 @@ const ProfilePage = ({ closeModal }) => { // Accept closeModal as a prop
               <strong className="text-black">Address:</strong> {profile.address}
             </p>
             <p className="text-lg text-black">
-              <strong className="text-black">Phone Number:</strong> {profile.phone_no}
+              <strong className="text-black">Phone Number:</strong>{" "}
+              {profile.phone_no}
             </p>
             <p className="text-lg text-black">
-              <strong className="text-black">Date of Birth:</strong> {profile.DOB}
+              <strong className="text-black">Date of Birth:</strong>{" "}
+              {profile.DOB}
             </p>
             <p className="text-lg text-black">
-              <strong className="text-black">Father's Name:</strong> {profile.Father_name}
+              <strong className="text-black">Father's Name:</strong>{" "}
+              {profile.Father_name}
             </p>
             <p className="text-lg text-black">
-              <strong className="text-black">Mother's Name:</strong> {profile.Mother_name}
+              <strong className="text-black">Mother's Name:</strong>{" "}
+              {profile.Mother_name}
             </p>
             <p className="text-lg text-black">
-              <strong className="text-black">Parents' Phone Number:</strong> {profile.Parents_phone_no}
+              <strong className="text-black">Parents' Phone Number:</strong>{" "}
+              {profile.Parents_phone_no}
             </p>
           </div>
           <div className="mt-6 flex space-x-4">
