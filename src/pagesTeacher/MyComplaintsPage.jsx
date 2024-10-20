@@ -20,7 +20,7 @@ const EditModal = ({
     <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50">
       <div className="bg-white p-6 rounded shadow-lg w-96">
         <h2 className="text-xl font-bold mb-4">Edit Complaint</h2>
-        <form>
+        <form onSubmit={(e) => { e.preventDefault(); onSave(); }}>
           <div className="mb-4">
             <label className="block mb-1">Title</label>
             <input
@@ -59,7 +59,7 @@ const EditModal = ({
             {editFormData.photo && (
               <div className="mt-2">
                 <img
-                  src={`${BASE_URL}${editFormData.photo}`}
+                  src={editFormData.photo}
                   alt="Current photo"
                   className="h-24 w-24 object-cover"
                 />
@@ -75,8 +75,7 @@ const EditModal = ({
               Cancel
             </button>
             <button
-              type="button"
-              onClick={onSave}
+              type="submit"
               className="bg-blue-500 text-white px-3 py-1 rounded"
             >
               Save
@@ -136,7 +135,7 @@ const MyComplaintsPage = () => {
       setError(null);
     } catch (error) {
       console.error("Error fetching complaints:", error);
-      setError(error.message || "Failed to fetch complaints");
+      setError(error.response ? error.response.data.message : "Failed to fetch complaints");
       setComplaints([]);
     } finally {
       setLoading(false);
@@ -160,7 +159,7 @@ const MyComplaintsPage = () => {
       title: complaint.title,
       description: complaint.description,
       suggestion: complaint.suggestion,
-      photo: complaint.photo,
+      photo: complaint.photo ? `${BASE_URL}${complaint.photo}` : null,
     });
     setIsModalOpen(true);
   };
@@ -193,9 +192,7 @@ const MyComplaintsPage = () => {
       );
 
       const updatedComplaint = response.data;
-      const updatedPhotoUrl = `${BASE_URL}${
-        updatedComplaint.photo
-      }?${new Date().getTime()}`;
+      const updatedPhotoUrl = `${BASE_URL}${updatedComplaint.photo}?${new Date().getTime()}`;
 
       setComplaints((prevComplaints) =>
         prevComplaints.map((complaint) =>
@@ -209,7 +206,7 @@ const MyComplaintsPage = () => {
       setIsModalOpen(false);
     } catch (error) {
       console.error("Error editing complaint:", error);
-      setError(error.message || "Failed to edit complaint");
+      setError(error.response ? error.response.data.message : "Failed to edit complaint");
     }
   };
 
@@ -269,72 +266,71 @@ const MyComplaintsPage = () => {
       ) : error ? (
         <p className="text-red-500">{error}</p>
       ) : (
-        <div>
-          {complaints.length === 0 ? (
-            <p>No complaints found.</p>
-          ) : (
-            <table className="min-w-full table-auto border-collapse border border-gray-200">
-              <thead>
-                <tr className="bg-blue-500 text-white">
-                  {/* Table headers */}
-                </tr>
-              </thead>
-              <tbody>
-                {complaints.map((complaint) => {
-                  const isSolved = complaint.solved;
+        <table className="min-w-full table-auto border-collapse border border-gray-200">
+          <thead>
+            <tr className="bg-blue-500 text-white">
+              <th className="px-4 py-2 border border-gray-300">Title</th>
+              <th className="px-4 py-2 border border-gray-300">Description</th>
+              <th className="px-4 py-2 border border-gray-300">Suggestion</th>
+              <th className="px-4 py-2 border border-gray-300">Photo</th>
+              <th className="px-4 py-2 border border-gray-300">Date</th>
+              <th className="px-4 py-2 border border-gray-300">Status</th>
+              <th className="px-4 py-2 border border-gray-300">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {complaints.length === 0 ? (
+              <tr>
+                <td colSpan={7} className="text-center">No complaints found.</td>
+              </tr>
+            ) : (
+              complaints.map((complaint) => {
+                const isSolved = complaint.solved;
 
-                  return (
-                    <tr
-                      key={complaint.complainID}
-                      className="bg-white even:bg-gray-100"
-                    >
-                      <td className="px-4 py-2 border">{complaint.title}</td>
-                      <td className="px-4 py-2 border">
-                        {complaint.description}
-                      </td>
-                      <td className="px-4 py-2 border">
-                        {complaint.suggestion}
-                      </td>
-                      <td className="px-4 py-2 border">
-                        <img
-                          src={`${BASE_URL}${complaint.photo}`}
-                          alt="Complaint"
-                          className="w-20 h-20 object-cover"
-                        />
-                      </td>
-                      <td className="px-4 py-2 border">
-                        {new Date(complaint.date).toLocaleDateString()}
-                      </td>
-                      <td className="px-4 py-2 border">
-                        {isSolved ? "Solved" : "Pending"}
-                      </td>
-                      <td className="px-4 py-2 border">
-                        <button
-                          onClick={() => startEditing(complaint)}
-                          className={`bg-blue-600 text-white px-2 py-1 rounded ${
-                            isSolved ? "opacity-50 cursor-not-allowed" : ""
-                          }`}
-                          disabled={isSolved || editComplaintId !== null}
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={() => deleteComplaint(complaint.complainID)}
-                          className={`bg-red-500 text-white px-2 py-1 rounded ml-2 ${
-                            isSolved ? "opacity-50 cursor-not-allowed" : ""
-                          }`}
-                          disabled={isSolved}
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          )}
-        </div>
+                return (
+                  <tr key={complaint.complainID} className="bg-white even:bg-gray-100">
+                    <td className="px-4 py-2 border">{complaint.title}</td>
+                    <td className="px-4 py-2 border">{complaint.description}</td>
+                    <td className="px-4 py-2 border">{complaint.suggestion}</td>
+                    <td className="px-4 py-2 border">
+                      <img
+                        src={`${BASE_URL}${complaint.photo}`}
+                        alt="Complaint"
+                        className="w-20 h-20 object-cover"
+                      />
+                    </td>
+                    <td className="px-4 py-2 border">
+                      {new Date(complaint.date).toLocaleDateString()}
+                    </td>
+                    <td className="px-4 py-2 border">
+                      {isSolved ? "Solved" : "Pending"}
+                    </td>
+                    <td className="px-4 py-2 border">
+                      <button
+                        onClick={() => startEditing(complaint)}
+                        className={`bg-blue-600 text-white px-2 py-1 rounded ${
+                          isSolved ? "opacity-50 cursor-not-allowed" : ""
+                        }`}
+                        disabled={isSolved || editComplaintId !== null}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => deleteComplaint(complaint.complainID)}
+                        className={`bg-red-500 text-white px-2 py-1 rounded ml-2 ${
+                          isSolved ? "opacity-50 cursor-not-allowed" : ""
+                        }`}
+                        disabled={isSolved}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
       )}
 
       <EditModal
